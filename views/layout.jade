@@ -1,0 +1,23 @@
+-
+	function apiUrl(api){
+		var google_url = "https://ajax.googleapis.com/ajax/libs/";
+		var apis = {
+			"angularjs":"1.4.2",
+			"angular_material":"0.10.1"
+		};
+		return google_url + api + "/" + apis[api];
+	}
+doctype html
+html(lang="en", ng-app="HomeSchedulerApp")
+	head
+		title
+		link(rel="stylesheet", href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css")
+		link(rel="stylesheet", href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css")
+		link(rel="stylesheet", href="#{apiUrl('angular_material')}/angular-material.min.css")
+		link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic")
+		link(rel='stylesheet', href='/stylesheets/style.css')
+		meta(name="viewport", content="initial-scale=1")
+	body(layout="column")
+		block content
+		include scripts
+		

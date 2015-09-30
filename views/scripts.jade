@@ -1,0 +1,27 @@
+-
+	function apiUrl(api){
+		var google_url = "https://ajax.googleapis.com/ajax/libs/";
+		var apis = {
+			"angularjs":"1.4.4",
+			"angular_material":"0.10.1"
+		};
+		return google_url + api + "/" + apis[api];
+	}
+//-script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js')
+//-script(src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js")
+//-script(src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js")
+//-Angular Material Dependencies 
+script(src="#{apiUrl('angularjs')}/angular.js")
+script(src="#{apiUrl('angularjs')}/angular-animate.js")
+script(src="#{apiUrl('angularjs')}/angular-aria.js")
+script(src="#{apiUrl('angularjs')}/angular-cookies.js")
+script(src="#{apiUrl('angularjs')}/angular-resource.js")
+script(src="#{apiUrl('angularjs')}/angular-route.js")
+script(src="#{apiUrl('angularjs')}/angular-sanitize.js")
+script(src="#{apiUrl('angularjs')}/angular-touch.js")
+//-angular src
+script(src="#{apiUrl('angular_material')}/angular-material.js")
+script(src='/javascripts/thenBy.js')
+script(src="/socket.io/socket.io.js")
+script(src='/javascripts/socket.min.js')
+script(src='/javascripts/global.js')

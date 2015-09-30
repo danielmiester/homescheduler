@@ -1,0 +1,10 @@
+extends layout
+
+block content
+	md-toolbar
+		.md-toolbar-tools
+			h3 Home Scheduler v!{app_version}
+	div(layout='row', flex)
+		#content(layout='column', flex)
+			md-content.md-padding(layout='column', flex)
+				include tabs.jade		

@@ -1,0 +1,31 @@
+md-tabs(md-dynamic-height, md-border-bottom)
+	//- md-tab(label="Users", 
+	//-     md-on-select="tabSelect()")
+	//-     mdcontent.md-padding
+
+	md-tab(label="Chores")
+		mdcontent.md-padding(ng-controller="ChoreCtrl")
+			md-card(ng-repeat="chore in chores track by chore._id", ng-disabled="chore.done")
+				md-card-content
+					h3{{chore.name}}
+					em {{chore.notes}}
+					md-contact-chips(
+						ng-model="chore.assignees",
+						readonly="true", ng-disabled="true",
+						md-contact-name="name",
+						md-contact-image="avatar",
+						md-contact-email="email")
+						md-chip-template
+							.md-contact-avatar
+								img(ng-src='{{$chip[$mdContactChipsCtrl.contactImage]}}', alt='{{$chip[$mdContactChipsCtrl.contactName]}}')
+							.md-contact-name
+								|{{$chip[$mdContactChipsCtrl.contactName]}}
+					div(layout="row" layout-align="space-between center")
+						.md-actions(layout="row" layout-align="start center")
+							md-button.md-primary(ng-click="editAssignees()") Assignees
+						.md-actions(layout="row" layout-align="end center",ng-if="!chore.done")
+							md-button.md-primary.md-raised(ng-click="choreDone()") Done
+							md-button.md-accent.md-raised(ng-click="choreSnooze()") Snooze
+						.md-actions(layout="row" layout-align="end center",ng-if="chore.done")
+							md-button.md-primary.md-raised(ng-click="choreWake()") Wake
+							
