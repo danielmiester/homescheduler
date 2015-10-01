@@ -46,4 +46,25 @@ Chore.statics.getChores=function(data,cb){
     var id = data.id||null;
     return this.find().populate("assignees").exec(cb);
 }
+Chore.statics.wakeSnoozed = function(cb){
+	return this.find({snooze:{"$lt":new Date()}}).exec(
+		function(err,chores){
+			var ids = [];
+			chores.forEach(function(e){
+				ids.push(e._id);
+				e.done = false;
+				e.snooze = undefined;
+				e.save(function(e){
+					if(e){
+						console.warn("error saving record:",err);
+					}
+				});
+			});
+			cb(null,ids);
+		}
+	);
+}
+Chore.statics.wakeAll = function(cb){
+	return this.update({done:true},{done:false,snooze:undefined},{multi:true}).exec(cb);
+}
 module.exports = mongoose.model("Chore",Chore);

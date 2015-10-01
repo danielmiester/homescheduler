@@ -43,11 +43,20 @@ function index(express,app,db){
             req.io.emit("choresUpdate",chore);
         })
     });
+    console.log("dev",process.env.npm_package_config_dev)
+    if(process.env.npm_package_config_dev){
+        log.info("index.js","waking all chores")
+        db.Chore.wakeAll(function(err,chores){
+            log.info("index.js","woken all chores",chores)
+        })
+    }
     var cronInterval = process.env.npm_package_config_cronInterval;
-    console.log(cronInterval)
     cronInterval *= 1000;
     function cron(){
         log.info("index.js","cron called")
+        db.Chore.wakeSnoozed(function(err,chores){
+            app.io.broadcast("choresWoken",chores)
+        })
     }
     var id = setInterval(cron,cronInterval);
     id.unref();
