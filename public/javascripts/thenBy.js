@@ -51,7 +51,7 @@ firstBy = (function() {
 byAll = function(a){
 	var f;
 	if(!a||a.length < 1){
-		throw "a needs to b non-null"
+		throw "a needs to be non-null"
 	}
 	var name = a.shift();
 	var dir = 1;

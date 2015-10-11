@@ -5,14 +5,14 @@ var controller = [
 	'$sanitize',
 	'socket',
 	'db',
-	function ($scope,$cookies,$resource,$sanitize,socket,db){
+	function controller($scope,$cookies,$resource,$sanitize,socket,db){
 		$scope.db = db;
 		$scope.chores = [];
 		$scope.sortBy = ["done","name"];
 		socket.emit("initialized");
 		socket.emit("getChores");
 		socket.on("choresResp",function(chores){
-			$scope.chores = chores.sort(byAll($scope.sortBy))
+			$scope.chores = chores;
 		});
 		$scope.choreDone=function(){
 			socket.emit("choreDone",this.chore._id);
@@ -20,12 +20,13 @@ var controller = [
 		$scope.choreWake=function(){
 			socket.emit("choreWake",this.chore._id);
 		}
-		socket.on("choresUpdate",function(chore){
-			var i = $scope.chores.findIndex(function(e){
-				return chore._id === e._id;
-			});
-			$scope.chores.splice(i,1,chore);
+		$scope.sortOptions = function sortOptions(){
+			console.log("sortOptions",arguments)
+		}
+		socket.on("choresUpdate",function updateChores(){
+			console.log(arguments)
 		})
+		$scope.chore
 	}
 ];
 var app = angular.module('HomeSchedulerApp', [

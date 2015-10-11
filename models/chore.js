@@ -9,12 +9,12 @@ var Chore = new Schema({
 		snooze: Date,
 		assignees:[{type:Schema.Types.ObjectId,ref:"User"}],
 		value: Number
-	});
+	},{minimize:false});
 Chore.methods.choreDone = function(done,cb){
 	this.done = done;
 	return this.save(cb);
 }
-Chore.statics.done = function(id, done, cb){
+Chore.statics.done = function(id,done, cb){
 	log.info('db.js',"entered done",id,done);
 	return this.findById(id).then(function(chore){
 		chore.choreDone(done,cb);
@@ -41,9 +41,9 @@ Chore.methods.Snooze = function(seconds,cb){
 	}
 	return this.save(cb);
 }
-Chore.statics.getChores=function(data,cb){
-    log.info("db.js","entered getChores",data);
-    var id = data.id||null;
+Chore.statics.getChores=function(cb){
+    log.info("db.js","entered getChores");
+    //var id = data.id||null;
     return this.find().populate("assignees").exec(cb);
 }
 Chore.statics.wakeSnoozed = function(cb){

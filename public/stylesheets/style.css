@@ -8,7 +8,10 @@
   margin: 16px;
   border-radius: 48px;
   border: 1px solid #ddd; }
-md-card[disabled] *{
+md-card[disabled]{
+	background-color: rgba(0,0,0,0.1);
+}
+md-card[disabled] md-card-content {
 	color : rgba(0, 0, 0, 0.26);
-  	background-color: transparent;
+  	/*background-color: transparent;*/
 }
