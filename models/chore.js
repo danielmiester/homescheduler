@@ -1,5 +1,7 @@
-var log = require("npmlog");
+var log = require('bunyan').createLogger({name: 'chore.js'});
+var Promise = require('bluebird');
 var mongoose = require("mongoose");
+mongoose.Promise = Promise;
 var Schema = mongoose.Schema;
 var Chore = new Schema({
 		name: String,
@@ -10,12 +12,20 @@ var Chore = new Schema({
 		assignees:[{type:Schema.Types.ObjectId,ref:"User"}],
 		value: Number
 	},{minimize:false});
+
+Chore.statics.wake = function(id){
+	log.info('chore.js',"entered wake",id);
+	return this.findById(id).then(function(chore){
+		chore.choreDone(null);
+	});
+}
+
 Chore.methods.choreDone = function(done,cb){
 	this.done = done;
 	return this.save(cb);
 }
 Chore.statics.done = function(id,done, cb){
-	log.info('db.js',"entered done",id,done);
+	log.info('chore.js',"entered done",id,done);
 	return this.findById(id).then(function(chore){
 		chore.choreDone(done,cb);
 	});
@@ -41,10 +51,21 @@ Chore.methods.Snooze = function(seconds,cb){
 	}
 	return this.save(cb);
 }
-Chore.statics.getChores=function(cb){
-    log.info("db.js","entered getChores");
+Chore.statics.getChores=function(done){
+    log.info("chore.js","entered getChores");
     //var id = data.id||null;
-    return this.find().populate("assignees").exec(cb);
+    return this
+    	.find({done:done})
+    	.populate("assignees")
+    	.exec(function(err,docs){})
+    	.then(function(chores){
+    		chores = chores.map(function(e,i,a){
+                var foo = e.toObject() ;
+                foo.assignees.readonly = true;
+                return foo;
+            })
+            return chores;
+    	},function(){log.info("chore.js","getChoresCB",arguments)});
 }
 Chore.statics.wakeSnoozed = function(cb){
 	return this.find({snooze:{"$lt":new Date()}}).exec(
@@ -64,7 +85,7 @@ Chore.statics.wakeSnoozed = function(cb){
 		}
 	);
 }
-Chore.statics.wakeAll = function(cb){
-	return this.update({done:true},{done:false,snooze:undefined},{multi:true}).exec(cb);
+Chore.statics.wakeAll = function(){
+	return this.update({done:true},{done:false,snooze:undefined},{multi:true}).exec();
 }
 module.exports = mongoose.model("Chore",Chore);

@@ -6,5 +6,4 @@ block content
 			h3 Home Scheduler v!{app_version}
 	div(layout='row', flex)
 		#content(layout='column', flex)
-			md-content.md-padding(layout='column', flex)
-				include tabs.jade		
+			md-content.md-padding(layout='column', flex,ng-include=include_file)

@@ -15,9 +15,10 @@ html(lang="en", ng-app="HomeSchedulerApp")
 		link(rel="stylesheet", href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css")
 		link(rel="stylesheet", href="#{apiUrl('angular_material')}/angular-material.min.css")
 		link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic")
+		link(rel='stylesheet' href='/stylesheets/sc-date-time.css')
 		link(rel='stylesheet', href='/stylesheets/style.css')
 		meta(name="viewport", content="initial-scale=1")
-	body(layout="column")
+	body(layout="column" ng-controller="basicController")
 		block content
 		include scripts
 		

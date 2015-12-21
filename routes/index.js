@@ -1,6 +1,10 @@
-var log = require("npmlog");
+var log = require('bunyan').createLogger({name: 'index.js'});
+var Promise = require('bluebird');
+var mongoose = require("mongoose");
+mongoose.Promise = Promise;
 var passport = require('passport');
 var Strategy = require('passport-http').BasicStrategy;
+var util = require('util');
 
 function index(express,app,db){
     var that = this;
@@ -8,81 +12,127 @@ function index(express,app,db){
     this.app = app; 
     this.db = db;
     passport.use(new Strategy(
-        function(userid, password, done) {
-            db.User.validateUser(userid,password, function (err, user) {
-                console.log(arguments);
-            if (err) { return done(err); }
-            if (!user) { return done(null, false); }
-            return done(null, user);
-        });
-      })
+        function ppucb(userid, password, done) {
+            log.info("index.js","ppucb")
+            db.User.validateUser(userid,password).then(function (user) {
+                log.info("index.js","passport.use.validateUser",user)
+                if (!user) { return done(null, false); }
+                return done(null, user);
+            }).catch(function(e){
+                return done(e)
+            });
+        })
     );
     passport.serializeUser(function(user, done) {
+        log.info("index.js","serializeUser")
         done(null, user._id);
     });
 
     passport.deserializeUser(function(id, done) {
-      db.User.findById(id, function(err, user) {
-        done(err, user.toObject());
-      });
+        log.info("index.js","passport.deserializeUser");
+        this.db
+        db.User
+        .findOne({id:id})
+        .exec()
+        .then(function(user){
+            done(null,user.toObject()||null);
+        })
+        .catch(function(e){
+            done(e,null);
+        });
     });
 
     /* GET home page. */
     app.get('/', 
         passport.authenticate('basic'),
         function(req, res, next) {
-        log.info("index.js","get Homepage")
-        res.render('index',{pretty:"  ",app_version:process.env.npm_package_version});
-    });
+            log.info("index.js","get Homepage")
+            res.render('index',{include_file:"'/jade/tabs.jade'",pretty:"  ",app_version:process.env.npm_package_version});
+        }
+    );
     app.get(/\/jade\/(.*)\.jade/,
+        passport.authenticate('basic'),
         function(req,res,next){
-        var file = req.params[0];
-        log.info("index.js","getTemplate",file);
-        app.render(file,{},function(err,html){
-            res.send(html);
-            console.log("html",html)
-        });
-    })
+            var file = req.params[0];
+            log.info("index.js","getTemplate",file);
+            app.render(file,{pretty:"  ",},function(err,html){
+                if(err){
+                    res.send(JSON.stringify(err))
+                }
+                res.send(html);
+            });
+        }
+    );
+    app.get(/\/test\/(.*\.jade)/,
+        function(req,res,next){
+            var file = "'/jade/"+req.params[0]+"'";
+            log.info("index.js","getTemplate",file);
+            res.render('index',{include_file:file,pretty:"  ",app_version:process.env.npm_package_version});
+        }
+    )
+    app.io.route("options",{
+        get:function(req){
+            log.info("index.js","GetOptions");
+            req.io.emit("options:load",req.session.userOptions);
+        },
+        set:function(req){
+            log.info("index.js","SetOption",req.data);
+            if(! req.session.userOptions){
+                req.session.userOptions = {};
+            }
+            for(var i in req.data){
+                req.session.userOptions[i] = req.data[i];    
+            }
+            req.session.save(function(){});
+            req.io.emit("sessionOptions",req.session.userOptions);
+        }
+    });
     app.io.route("initialized",function(req){
         log.info("index.js","Frontend initialized");
+        req.io.emit("sessionOptions",req.session.userOptions);
     });
-    function getChores(req){
-        db.Chore.getChores(function(err,chores){
-            //log.info("index.js","gotChores:",chores)
+    app.io.route("chores",{
+        getAll:function(req){
+            var data = req.data || {};
+            var id = data.id||null;
+            var done = data.done||null;
+            log.info("index.js","getChores() id:" + id,"done",done);
+            db.Chore.getChores(done).then(function(chores){
+                log.info("index.js","gotChores:",chores)
 
-            chores = chores.map(function(e,i,a){
-                var foo = e.toObject() ;
-                foo.assignees.readonly = true;
-                return foo;
+                // chores = chores.map(function(e,i,a){
+                //     var foo = e.toObject() ;
+                //     foo.assignees.readonly = true;
+                //     return foo;
+                // })
+                req.io.emit("chores:update",chores);
+            });
+            
+        }
+    });
+    app.io.route("chore",{
+        done:function(req){
+            var id = req.data;
+            log.info("index.js","choreDone",id);
+            db.Chore.done(id,true,function(err,chore){
+                app.io.broadcast("chores:update",chore);
             })
+        },
+        wake:function(req){
+            var id = req.data;
+            log.info("index.js","choreWake",id);
+            db.Chore.wake(id,function(err,chore){
+                log.info("index.js","choreWakeCB",chore);
+                app.io.broadcast("chores:update",chore);
+            })
+        },
 
-            req.io.emit("choresResp",chores);
-        });
-    }
-    app.io.route("getChores",function(req){
-        var data = req.data || {};
-        var id = data.id||null;
-        log.info("index.js","getChores() id:" + id);
-        getChores(req);
     });
-    app.io.route("choreDone",function(req){
-        var id = req.data;
-        log.info("index.js","choreDone",id);
-        db.Chore.done(id,true,function(err,chore){
-            getChores(req);
-        })
-    });
-    app.io.route("choreWake",function(req){
-        var id = req.data;
-        log.info("index.js","choreWake",id);
-        db.Chore.wake(id,function(err,chore){
-            req.io.emit("choresUpdate",chore);
-        })
-    });
+    
     console.log("dev",process.env.npm_package_config_dev)
     if(process.env.npm_package_config_dev){
         log.info("index.js","waking all chores")
-        db.Chore.wakeAll(function(err,chores){
+        db.Chore.wakeAll().then(function(chores){
             log.info("index.js","woken all chores",chores)
         })
     }

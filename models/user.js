@@ -1,18 +1,18 @@
+var log = require('bunyan').createLogger({name: 'user.js'});
+var Promise = require('bluebird');
 var mongoose = require("mongoose");
+mongoose.Progress = Promise;
+
 var crypto = require("crypto");
 var util = require("util");
 var randomstring = require("randomstring");
-var winston = require("winston");
-winston.loggers.add("user.js",{});
-var log = winston.loggers.get("user.js");
-
 
 function hashPassword(salt,password){
-	log.debug("hashing",password,"with",salt)
+	log.trace("hashing",password,"with",salt)
 	var shasum = crypto.createHash("sha512");
 	shasum.update(salt+password);
 	var d = shasum.digest("base64");
-	log.debug("hash",d);
+	log.info("hash result",d);
 	return d;
 }
 var User = new mongoose.Schema({
@@ -32,40 +32,39 @@ User.virtual("password.hash").get(function(){
 	return this.password.split("$")[3];
 });
 User.virtual("password.set").set(function(password){
+	log.debug("setting ",this.username,"password",password);
+	log.trace("password",password)
 	var salt = randomstring.generate(12);
+	log.info("Salt",salt)
 	var pw = hashPassword(salt,password)
+	log.info("hash",pw)
 	this.password = util.format("$6$%s$%s",salt,pw)
 });
-User.statics.findUsersNamed = function(name,cb){
-	return this.find({"name":new RegExp(name,"i")}).sort("name").limit(20).exec(cb);
+User.statics.findUsersNamed = function(name){
+	log.debug("Finding users named",name)
+	return this.find({"name":new RegExp(name,"i")}).sort("name").limit(20).exec();
 }
-User.statics.validateUser = function(username,password,cb){
-	log.debug("Looking for user:%s",username);
-	return this.findOne(
-		{
-			username:username
-		},
-		function(err,user){
-			log.debug("DB Results, err:%s, user found:%s",err,!!user)
-			if(user && !err){
-				log.debug("found user",user.name)
-				var inHash = hashPassword(user.get("password.salt"),password);
-				var knownHash = user.get("password.hash");
-				log.debug("Input:",inHash);
-				log.debug("Known:",knownHash)
-				if(knownHash === inHash){
-					cb(null,user.toObject());
-				}else{
-					cb(null,false,{message:"Incorrect Password"});
-				}
-			}else if(!user && !err){
-				log.info("user.js","user Not found")
-				cb(null,null)
+User.statics.validateUser = function(username,password){
+	log.info("Looking for user:%s",username);
+	var q = {username:username};
+	return this
+	.findOne(q)
+	.exec()
+	.then(function(user){
+		log.info("DB Results, user found:%s",!!user)
+		if(user){
+			log.info("found user",user.name)
+			var inHash = hashPassword(user.get("password.salt"),password);
+			var knownHash = user.get("password.hash");
+			log.info("Input:",inHash);
+			log.info("Known:",knownHash)
+			if(knownHash === inHash){
+				return user.toObject();
 			}else{
-				log.warn("user.js","db error");
-				cb(err);
+				return false;
 			}
 		}
-	);
+		return null;
+	})
 }
 module.exports = mongoose.model("User",User);

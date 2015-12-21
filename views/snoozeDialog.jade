@@ -1,3 +1,5 @@
-md-dialog(aria-lable="Snooze")
+//- md-dialog(aria-label="Snooze")
+form
 	md-dialog-content
-		
+		.md-dialog-content
+			time-date-picker(ng-model="foo" on-save="saveDate($value)",on-cancel="cancelDate()")
