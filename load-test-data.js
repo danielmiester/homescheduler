@@ -1,16 +1,24 @@
 var util = require("util")
+var config = require("./config.js")
 function DB(cb){
     var that = this;
 	this.mongo = require('mongodb');
     this.mongoose = require('mongoose');
-    var db = this.mongoose.connect(
-        util.format("mongodb://%s:%s@%s:%s/%s",
-            process.env.npm_package_config_mongoUser,
-            process.env.npm_package_config_mongoPass,
-            process.env.npm_package_config_mongoHost,
-            process.env.npm_package_config_mongoPort,
-            process.env.npm_package_config_mongoDbName)
-        ).connection;
+    var db_url = "mongodb://";
+    if(config.mongoUser){
+        db_url += config.mongoUser;
+        if(config.mongoPass){
+            db_url += ":" + config.mongoPass;
+        }
+        db_url += "@"
+    }
+    db_url += config.mongoHost
+    if(config.mongoPort){
+        db_url += ":" + config.mongoPort;
+    }
+    db_url += "/" + config.mongoDbName;
+    console.log("loda-data","connecting to",db_url)
+    var db = this.mongoose.connect(db_url).connection;
     db.on("error",function(){
         console.log("mongo Connection error:",arguments)
         cb.apply(this,arguments);

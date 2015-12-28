@@ -129,15 +129,15 @@ function index(express,app,db){
 
     });
     
-    console.log("dev",process.env.npm_package_config_dev)
-    if(process.env.npm_package_config_dev){
+    console.log("dev",config.dev)
+    if(config.dev){
         log.info("index.js","waking all chores")
         db.Chore.wakeAll().then(function(chores){
             log.info("index.js","woken all chores",chores)
         })
     }
     /**
-    var cronInterval = process.env.npm_package_config_cronInterval;
+    var cronInterval = config.cronInterval;
     cronInterval *= 1000;
     function cron(){
         log.info("index.js","cron called")

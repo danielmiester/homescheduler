@@ -74,5 +74,5 @@ mM.then(function(myMongoose){
     process.exit(-1);
 })
 
-app.listen(process.env.npm_package_config_port);
+app.listen(config.port);
 module.exports = app;

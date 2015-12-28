@@ -1,27 +1,28 @@
 var bunyan = require('bunyan');
 var log = bunyan.createLogger({name: 'db.js'});
 var util = require('util');
+var config = require("config");
 function DB(cb){
 	this.mongo = require('mongodb');
     this.mongoose = require('mongoose');
     var db_url = "mongodb://";
-    if(process.env.npm_package_config_mongoUser){
-        db_url += process.env.npm_package_config_mongoUser;
-        if(process.env.npm_package_config_mongoPass){
-            db_url += ":" + process.env.npm_package_config_mongoPass;
+    if(config.mongoUser){
+        db_url += config.mongoUser;
+        if(config.mongoPass){
+            db_url += ":" + config.mongoPass;
         }
         db_url += "@"
     }
-    db_url += process.env.npm_package_config_mongoHost
-    if(process.env.npm_package_config_mongoPort){
-        db_url += ":" + process.env.npm_package_config_mongoPort;
+    db_url += config.mongoHost
+    if(config.mongoPort){
+        db_url += ":" + config.mongoPort;
     }
-    db_url += "/" + process.env.npm_package_config_mongoDbName;
+    db_url += "/" + config.mongoDbName;
     log.info("db.js","connecting to",db_url)
     var db = this.mongoose.connect(db_url).connection;
     db.on("error",function(){
         log.error("db.js","mongo Connection error:",arguments)
-        log.error("db.js","please ensure DB is functional: mongod --dbpath data/ --fork --logpath logs/mongo.log")
+        log.error("db.js","please ensure DB is functional: mongod --dbpath data/ --fork --logpath logs/mongo.log");
         cb.apply(this,arguments);
         process.exit();
     });

@@ -11,16 +11,6 @@
     "stop-db": "mongo admin --eval 'db.shutdownServer()' > /dev/null",
     "stop": ""
   },
-  "config": {
-    "port": 3000,
-    "cronInterval": 10,
-    "dev": true,
-    "mongoHost": "localhost",
-    "mongoPort": "27017",
-    "mongoUser": "",
-    "mongoPass": "",
-    "mongoDbName": "homescheduler"
-  },
   "dependencies": {
     "async": "^1.5.0",
     "bluebird": "^3.0.6",

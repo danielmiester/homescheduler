@@ -12,18 +12,18 @@ mongoose.Promise = Promise;
 
 function _generateMongoUrl() {
     var db_url = "mongodb://";
-    if (process.env.npm_package_config_mongoUser) {
-        db_url += process.env.npm_package_config_mongoUser;
-        if (process.env.npm_package_config_mongoPass) {
-            db_url += ":" + process.env.npm_package_config_mongoPass;
+    if (config.mongoUser) {
+        db_url += config.mongoUser;
+        if (config.mongoPass) {
+            db_url += ":" + config.mongoPass;
         }
         db_url += "@"
     }
-    db_url += process.env.npm_package_config_mongoHost
-    if (process.env.npm_package_config_mongoPort) {
-        db_url += ":" + process.env.npm_package_config_mongoPort;
+    db_url += config.mongoHost
+    if (config.mongoPort) {
+        db_url += ":" + config.mongoPort;
     }
-    db_url += "/" + process.env.npm_package_config_mongoDbName;
+    db_url += "/" + config.mongoDbName;
     return db_url;
 }
 var myMongoose = function(){
