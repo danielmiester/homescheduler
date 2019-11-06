@@ -28,7 +28,7 @@
     "kerberos": "0.0.17",
     "long-stack-traces": "^0.1.2",
     "mongodb": "^2.1.1",
-    "mongoose": "^4.2.9",
+    "mongoose": "^5.7.8",
     "morgan": "^1.6.1",
     "npmlog": "^0.0.6",
     "passport": "^0.3.2",
